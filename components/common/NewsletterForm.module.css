@@ -1,0 +1,48 @@
+.form {
+  display: flex;
+  gap: var(--space-sm);
+  width: 100%;
+  max-width: 420px;
+  flex-wrap: wrap;
+}
+
+.input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.875rem 1.25rem;
+  font-size: var(--text-base);
+  font-family: var(--font-sans);
+  border: none;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  backdrop-filter: blur(10px);
+  outline: none;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+.input:focus {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+}
+
+.btn {
+  padding: 0.875rem 1.5rem;
+  font-size: var(--text-base);
+  font-weight: 700;
+  font-family: var(--font-sans);
+  color: var(--color-primary);
+  background: white;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
