@@ -12,6 +12,7 @@ import {
 } from "@/lib/strapi";
 import { MarkdownRenderer } from "@/components/blog/MarkdownRenderer";
 import { TableOfContents } from "@/components/blog/TableOfContents";
+import { LiveRefresh } from "@/components/blog/LiveRefresh";
 import styles from "./page.module.css";
 
 interface PageProps {
@@ -101,6 +102,8 @@ export default async function BlogPostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      
+      <LiveRefresh slug={post.slug} initialUpdatedAt={post.updatedAt} />
 
       <article>
         {/* ── Hero ── */}
