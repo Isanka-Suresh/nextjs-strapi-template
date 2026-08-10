@@ -10,13 +10,14 @@ export const metadata: Metadata = {
   description: "Browse all articles on web development, JavaScript, design systems, and developer tools.",
 };
 
-export const revalidate = 60;
 
 interface SearchParams {
   page?: string;
   category?: string;
   search?: string;
 }
+
+export const instant = false;
 
 interface PageProps {
   searchParams: Promise<SearchParams>;

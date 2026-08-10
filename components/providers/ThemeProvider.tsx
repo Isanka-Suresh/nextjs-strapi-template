@@ -1,40 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, createContext, useContext } from "react";
 
 type Theme = "light" | "dark";
-
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial = stored || (prefersDark ? "dark" : "light");
-    setTheme(initial);
-    document.documentElement.setAttribute("data-theme", initial);
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
-  }, [theme, mounted]);
-
-  const toggle = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
-
-  if (!mounted) return <>{children}</>;
-
-  return (
-    <ThemeContext.Provider value={{ theme, toggle }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-}
-
-import { createContext, useContext } from "react";
 
 interface ThemeContextType {
   theme: Theme;
@@ -45,5 +13,34 @@ const ThemeContext = createContext<ThemeContextType>({
   theme: "light",
   toggle: () => {},
 });
+
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // Read theme from DOM attribute that was already set by the blocking
+  // inline script in layout.tsx. This avoids the mounted-guard pattern
+  // that caused FOUC.
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Server-side: default to light (will sync on client immediately)
+    if (typeof window === "undefined") return "light";
+    return (document.documentElement.getAttribute("data-theme") as Theme) ?? "light";
+  });
+
+  // Sync DOM attribute and localStorage when theme changes
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // localStorage unavailable in some contexts
+    }
+  }, [theme]);
+
+  const toggle = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggle }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+}
 
 export const useTheme = () => useContext(ThemeContext);

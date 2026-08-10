@@ -46,3 +46,41 @@
   opacity: 0.92;
   transform: translateY(-1px);
 }
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success state */
+.successState {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  max-width: 420px;
+}
+
+.successIcon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.successText {
+  font-size: var(--text-base);
+  color: white;
+  font-weight: 500;
+}
+
+/* Error state */
+.errorText {
+  width: 100%;
+  font-size: var(--text-sm);
+  color: #fca5a5;
+  margin-top: var(--space-xs);
+}

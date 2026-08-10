@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import styles from "./Footer.module.css";
 
@@ -20,7 +22,7 @@ const FOOTER_LINKS = {
 };
 
 export function Footer() {
-  const year = new Date().getFullYear();
+  const year = 2026;
 
   return (
     <footer className={styles.footer}>
@@ -38,14 +40,16 @@ export function Footer() {
                   </linearGradient>
                 </defs>
                 <rect width="28" height="28" rx="8" fill="url(#footerLogoGrad)" />
-                <path d="M8 10h12M8 14h8M8 18h10" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                <polygon points="14,7 24,12 14,17 4,12" fill="white" opacity="0.95" />
+                <line x1="14" y1="17" x2="14" y2="22" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                <line x1="24" y1="12" x2="24" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round" />
               </svg>
               <span className={styles.logoText}>
-                Dev<span className={styles.logoPulse}>Pulse</span>
+                Edu<span className={styles.logoPulse}>Hub</span>
               </span>
             </Link>
             <p className={styles.tagline}>
-              Insights, tutorials, and perspectives for modern developers. Written with ❤️ by developers.
+              Curated knowledge, tutorials, and learning paths for curious minds. Built with ❤️ by educators.
             </p>
             {/* Social Links */}
             <div className={styles.socials}>
@@ -119,7 +123,7 @@ export function Footer() {
         {/* Bottom */}
         <div className={styles.bottom}>
           <p className={styles.copyright}>
-            © {year} DevPulse Blog. Built with{" "}
+            © {year} EduHub. Built with{" "}
             <a href="https://nextjs.org" target="_blank" rel="noopener noreferrer" className={styles.techLink}>
               Next.js
             </a>{" "}
@@ -128,7 +132,7 @@ export function Footer() {
               Strapi
             </a>
           </p>
-          <p className={styles.madeWith}>Made with ❤️ for developers</p>
+          <p className={styles.madeWith}>Made with ❤️ for lifelong learners</p>
         </div>
       </div>
     </footer>

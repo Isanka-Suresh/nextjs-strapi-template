@@ -1,4 +1,12 @@
 // ─────────────────────────────────────────────
+// Strapi Blocks content type (for @strapi/blocks-react-renderer)
+// ─────────────────────────────────────────────
+
+export type StrapiBlocksContent = Parameters<
+  typeof import("@strapi/blocks-react-renderer").BlocksRenderer
+>[0]["content"];
+
+// ─────────────────────────────────────────────
 // Strapi API Response wrapper types
 // ─────────────────────────────────────────────
 
@@ -55,16 +63,13 @@ export interface Category {
 // Post (Blog)
 // ─────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type BlocksContent = any[];
-
 export interface Post {
   id: number;
   documentId: string;
   title: string;
   slug: string;
-  excerpt: string;
-  content: BlocksContent | null;
+  excerpt: string | null;
+  content: StrapiBlocksContent | null;
   coverImage: StrapiImage | null;
   readingTime: number;
   featured: boolean;

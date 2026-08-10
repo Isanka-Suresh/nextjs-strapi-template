@@ -3,7 +3,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 import {
   getPostBySlug,
   getAllPostSlugs,
@@ -11,6 +10,8 @@ import {
   getAdjacentPosts,
   getStrapiImageUrl,
 } from "@/lib/strapi";
+import { MarkdownRenderer } from "@/components/blog/MarkdownRenderer";
+import { TableOfContents } from "@/components/blog/TableOfContents";
 import styles from "./page.module.css";
 
 interface PageProps {
@@ -20,35 +21,50 @@ interface PageProps {
 export async function generateStaticParams() {
   try {
     const slugs = await getAllPostSlugs();
+    if (slugs.length === 0) return [{ slug: "placeholder" }];
     return slugs.map((slug) => ({ slug }));
   } catch {
-    // Strapi not available at build time — pages will be generated on-demand
-    return [];
+    // Strapi not available at build time — return placeholder to satisfy cacheComponents validation
+    return [{ slug: "placeholder" }];
   }
 }
 
+// React.cache() in getPostBySlug ensures generateMetadata and the page
+// component share a single Strapi fetch per request (no double-fetching)
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === "placeholder") return { title: "Placeholder" };
+  
   try {
     const post = await getPostBySlug(slug);
     if (!post) return { title: "Post not found" };
+
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
     const imageUrl = getStrapiImageUrl(post.coverImage?.url);
+    const canonicalUrl = `${SITE_URL}/blog/${slug}`;
+
     return {
       title: post.seoTitle || post.title,
-      description: post.seoDescription || post.excerpt,
+      description: post.seoDescription || post.excerpt || post.title,
+      alternates: {
+        canonical: canonicalUrl,
+      },
       openGraph: {
         title: post.seoTitle || post.title,
-        description: post.seoDescription || post.excerpt,
+        description: post.seoDescription || post.excerpt || post.title,
         type: "article",
+        url: canonicalUrl,
         publishedTime: post.publishedAt,
         modifiedTime: post.updatedAt,
         authors: post.author ? [post.author.name] : [],
-        images: imageUrl ? [{ url: imageUrl }] : [],
+        images: imageUrl
+          ? [{ url: imageUrl, width: post.coverImage?.width, height: post.coverImage?.height, alt: post.coverImage?.alternativeText || post.title }]
+          : [],
       },
       twitter: {
         card: "summary_large_image",
         title: post.seoTitle || post.title,
-        description: post.seoDescription || post.excerpt,
+        description: post.seoDescription || post.excerpt || post.title,
         images: imageUrl ? [imageUrl] : [],
       },
     };
@@ -57,11 +73,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export const revalidate = 60;
-export const dynamicParams = true;
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
+  if (slug === "placeholder") notFound();
 
   let post;
   try {
@@ -71,6 +86,8 @@ export default async function BlogPostPage({ params }: PageProps) {
   }
 
   if (!post) notFound();
+
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
 
   const [relatedPosts, adjacent] = await Promise.allSettled([
     post.category ? getRelatedPosts(post.category.slug, slug) : Promise.resolve([]),
@@ -82,23 +99,56 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   const imageUrl = getStrapiImageUrl(post.coverImage?.url);
   const authorAvatarUrl = getStrapiImageUrl(post.author?.avatar?.url);
+  const canonicalUrl = `${SITE_URL}/blog/${slug}`;
 
-  const jsonLd = {
+  // Article structured data
+  const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.title,
-    description: post.excerpt,
+    description: post.seoDescription || post.excerpt || post.title,
     image: imageUrl || undefined,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt,
-    author: post.author ? { "@type": "Person", name: post.author.name } : undefined,
+    url: canonicalUrl,
+    author: post.author
+      ? {
+          "@type": "Person",
+          name: post.author.name,
+          url: `${SITE_URL}/author/${post.author.slug}`,
+          ...(post.author.twitter ? { sameAs: [`https://twitter.com/${post.author.twitter}`] } : {}),
+        }
+      : undefined,
+    publisher: {
+      "@type": "Organization",
+      name: "EduHub",
+      url: SITE_URL,
+    },
+  };
+
+  // Breadcrumb structured data
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+      ...(post.category
+        ? [{ "@type": "ListItem", position: 3, name: post.category.name, item: `${SITE_URL}/category/${post.category.slug}` }]
+        : []),
+      { "@type": "ListItem", position: post.category ? 4 : 3, name: post.title, item: canonicalUrl },
+    ],
   };
 
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       <article>
@@ -130,7 +180,10 @@ export default async function BlogPostPage({ params }: PageProps) {
             )}
 
             <h1 className={styles.title}>{post.title}</h1>
-            <p className={styles.excerpt}>{post.excerpt}</p>
+
+            {post.excerpt && (
+              <p className={styles.excerpt}>{post.excerpt}</p>
+            )}
 
             <div className={styles.meta}>
               {post.author && (
@@ -150,14 +203,6 @@ export default async function BlogPostPage({ params }: PageProps) {
               <div className={styles.metaDivider} />
               <span className={styles.readTime}>{post.readingTime} min read</span>
             </div>
-
-            {post.tags && Array.isArray(post.tags) && post.tags.length > 0 && (
-              <div className={styles.tags}>
-                {post.tags.map((tag: string) => (
-                  <span key={tag} className={styles.tag}>#{tag}</span>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
@@ -179,90 +224,100 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
         )}
 
-        {/* ── Content ── */}
+        {/* ── Content + TOC ── */}
         <div className="container--blog">
-          <div className={styles.content}>
+          <div className={styles.articleLayout}>
+            {/* TOC Sidebar — client component for scroll tracking */}
             {post.content && (
-              <div className={styles.prose}>
-                <BlocksRenderer content={post.content} />
-              </div>
+              <TableOfContents content={post.content} />
             )}
-          </div>
 
-          {/* ── Share ── */}
-          <div className={styles.shareSection}>
-            <span className={styles.shareLabel}>Share this article</span>
-            <div className={styles.shareButtons}>
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${post.slug}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.shareBtn}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-                Share
-              </a>
-              <a
-                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_SITE_URL}/blog/${post.slug}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.shareBtn}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                </svg>
-                LinkedIn
-              </a>
-            </div>
-          </div>
-
-          {/* ── Author Card ── */}
-          {post.author && (
-            <div className={styles.authorCard}>
-              {authorAvatarUrl ? (
-                <Image src={authorAvatarUrl} alt={post.author.name} width={64} height={64} className={styles.authorCardAvatar} />
-              ) : (
-                <span className={styles.authorCardInitial}>{post.author.name.charAt(0)}</span>
-              )}
-              <div className={styles.authorCardInfo}>
-                <p className={styles.authorCardLabel}>Written by</p>
-                <Link href={`/author/${post.author.slug}`} className={styles.authorCardName}>
-                  {post.author.name}
-                </Link>
-                {post.author.bio && <p className={styles.authorCardBio}>{post.author.bio}</p>}
+            {/* Main Content — rendered on server via BlocksRenderer */}
+            <div className={styles.articleMain}>
+              <div className={styles.content}>
+                {post.content && (
+                  <MarkdownRenderer content={post.content} className={styles.prose} />
+                )}
               </div>
-            </div>
-          )}
 
-          {/* ── Prev / Next ── */}
-          {(adjacentPosts.prev || adjacentPosts.next) && (
-            <nav className={styles.prevNext} aria-label="Article navigation">
-              {adjacentPosts.prev ? (
-                <Link href={`/blog/${adjacentPosts.prev.slug}`} className={styles.prevNextLink}>
-                  <span className={styles.prevNextLabel}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M19 12H5M12 19l-7-7 7-7" />
+              {/* ── Share ── */}
+              <div className={styles.shareSection}>
+                <span className={styles.shareLabel}>Share this article</span>
+                <div className={styles.shareButtons}>
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(post.title)}&url=${encodeURIComponent(canonicalUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.shareBtn}
+                    aria-label="Share on X (Twitter)"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622 5.911-5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                     </svg>
-                    Previous
-                  </span>
-                  <span className={styles.prevNextTitle}>{adjacentPosts.prev.title}</span>
-                </Link>
-              ) : <div />}
-              {adjacentPosts.next ? (
-                <Link href={`/blog/${adjacentPosts.next.slug}`} className={`${styles.prevNextLink} ${styles.prevNextRight}`}>
-                  <span className={styles.prevNextLabel}>
-                    Next
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M5 12h14M12 5l7 7-7 7" />
+                    Share
+                  </a>
+                  <a
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(canonicalUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.shareBtn}
+                    aria-label="Share on LinkedIn"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
                     </svg>
-                  </span>
-                  <span className={styles.prevNextTitle}>{adjacentPosts.next.title}</span>
-                </Link>
-              ) : <div />}
-            </nav>
-          )}
+                    LinkedIn
+                  </a>
+                </div>
+              </div>
+
+              {/* ── Author Card ── */}
+              {post.author && (
+                <div className={styles.authorCard}>
+                  {authorAvatarUrl ? (
+                    <Image src={authorAvatarUrl} alt={post.author.name} width={64} height={64} className={styles.authorCardAvatar} />
+                  ) : (
+                    <span className={styles.authorCardInitial}>{post.author.name.charAt(0)}</span>
+                  )}
+                  <div className={styles.authorCardInfo}>
+                    <p className={styles.authorCardLabel}>Written by</p>
+                    <Link href={`/author/${post.author.slug}`} className={styles.authorCardName}>
+                      {post.author.name}
+                    </Link>
+                    {post.author.bio && <p className={styles.authorCardBio}>{post.author.bio}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Prev / Next ── */}
+              {(adjacentPosts.prev || adjacentPosts.next) && (
+                <nav className={styles.prevNext} aria-label="Article navigation">
+                  {adjacentPosts.prev ? (
+                    <Link href={`/blog/${adjacentPosts.prev.slug}`} className={styles.prevNextLink}>
+                      <span className={styles.prevNextLabel}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                          <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        Previous
+                      </span>
+                      <span className={styles.prevNextTitle}>{adjacentPosts.prev.title}</span>
+                    </Link>
+                  ) : <div />}
+                  {adjacentPosts.next ? (
+                    <Link href={`/blog/${adjacentPosts.next.slug}`} className={`${styles.prevNextLink} ${styles.prevNextRight}`}>
+                      <span className={styles.prevNextLabel}>
+                        Next
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                          <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                      <span className={styles.prevNextTitle}>{adjacentPosts.next.title}</span>
+                    </Link>
+                  ) : <div />}
+                </nav>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* ── Related Posts ── */}
@@ -277,7 +332,7 @@ export default async function BlogPostPage({ params }: PageProps) {
                       <div className={styles.relatedImage}>
                         <Image
                           src={getStrapiImageUrl(p.coverImage.url)}
-                          alt={p.title}
+                          alt={p.coverImage.alternativeText || p.title}
                           fill
                           sizes="(max-width: 768px) 100vw, 33vw"
                           className={styles.relatedImg}
@@ -291,7 +346,9 @@ export default async function BlogPostPage({ params }: PageProps) {
                         </span>
                       )}
                       <h3 className={styles.relatedPostTitle}>{p.title}</h3>
-                      <p className={styles.relatedExcerpt}>{p.excerpt}</p>
+                      {p.excerpt && (
+                        <p className={styles.relatedExcerpt}>{p.excerpt}</p>
+                      )}
                     </div>
                   </Link>
                 ))}

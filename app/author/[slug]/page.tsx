@@ -13,14 +13,16 @@ interface PageProps {
 export async function generateStaticParams() {
   try {
     const slugs = await getAllAuthorSlugs();
+    if (slugs.length === 0) return [{ slug: "placeholder" }];
     return slugs.map((slug) => ({ slug }));
   } catch {
-    return [];
+    return [{ slug: "placeholder" }];
   }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  if (slug === "placeholder") return { title: "Placeholder" };
   try {
     const author = await getAuthorBySlug(slug);
     if (!author) return { title: "Author not found" };
@@ -33,10 +35,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export const revalidate = 60;
 
 export default async function AuthorPage({ params }: PageProps) {
   const { slug } = await params;
+  if (slug === "placeholder") notFound();
+  
   const [author, postsRes] = await Promise.all([
     getAuthorBySlug(slug),
     getPosts({ author: slug, pageSize: 12 }),

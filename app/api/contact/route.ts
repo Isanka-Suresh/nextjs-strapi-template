@@ -3,6 +3,9 @@ import { submitContact } from "@/lib/strapi";
 
 export async function POST(req: NextRequest) {
   try {
+    // TODO: Implement rate limiting in production (e.g. upstash/ratelimit)
+    // to prevent spam submissions to Strapi.
+    
     const body = await req.json();
     const { name, email, subject, message } = body;
 

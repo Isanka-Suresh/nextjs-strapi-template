@@ -18,7 +18,12 @@ export function Header() {
   const { theme, toggle } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -54,16 +59,14 @@ export function Header() {
                 </linearGradient>
               </defs>
               <rect width="28" height="28" rx="8" fill="url(#logoGrad)" />
-              <path
-                d="M8 10h12M8 14h8M8 18h10"
-                stroke="white"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              {/* Graduation cap symbol */}
+              <polygon points="14,7 24,12 14,17 4,12" fill="white" opacity="0.95" />
+              <line x1="14" y1="17" x2="14" y2="22" stroke="white" strokeWidth="2" strokeLinecap="round" />
+              <line x1="24" y1="12" x2="24" y2="18" stroke="white" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </span>
           <span className={styles.logoText}>
-            Dev<span className={styles.logoPulse}>Pulse</span>
+            Edu<span className={styles.logoPulse}>Hub</span>
           </span>
         </Link>
 
@@ -95,10 +98,10 @@ export function Header() {
           <button
             className={styles.themeToggle}
             onClick={toggle}
-            aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            aria-label={`Switch to ${mounted && theme === "dark" ? "light" : "dark"} mode`}
             id="theme-toggle"
           >
-            {theme === "dark" ? (
+            {mounted && theme === "dark" ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="5" />
                 <line x1="12" y1="1" x2="12" y2="3" />

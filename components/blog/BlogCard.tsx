@@ -62,7 +62,9 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
         </h2>
 
         {/* Excerpt */}
-        <p className={styles.excerpt}>{post.excerpt}</p>
+        {post.excerpt && (
+          <p className={styles.excerpt}>{post.excerpt}</p>
+        )}
 
         {/* Author + CTA */}
         <div className={styles.footer}>

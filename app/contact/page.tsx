@@ -62,7 +62,7 @@ export default function ContactPage() {
               <div className={styles.infoIcon}>✉️</div>
               <h3 className={styles.infoTitle}>Email us</h3>
               <p className={styles.infoDesc}>
-                Reach us at <a href="mailto:hello@devpulse.blog" className={styles.infoLink}>hello@devpulse.blog</a>
+                Reach us at <a href="mailto:hello@eduhub.blog" className={styles.infoLink}>hello@eduhub.blog</a>
               </p>
             </div>
             <div className={styles.infoCard}>

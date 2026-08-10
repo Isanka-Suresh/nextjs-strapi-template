@@ -9,14 +9,18 @@ import { format } from "date-fns";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "DevPulse Blog — Insights for Modern Developers",
+  title: "EduHub — Your Hub for Learning & Education",
   description:
-    "Discover the latest articles on web development, JavaScript, design systems, and developer tools. Written by passionate developers.",
+    "Explore curated articles on online learning, study techniques, courses, and educational resources. Written by passionate educators.",
 };
 
-export const revalidate = 60;
+import { cacheLife, cacheTag } from "next/cache";
 
 export default async function HomePage() {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag("posts", "categories");
+
   let featuredPost: Post | null = null;
   let latestRes: StrapiListResponse<Post> = {
     data: [],
@@ -46,7 +50,7 @@ export default async function HomePage() {
           <div className={styles.heroContent}>
             <div className={`${styles.badge} animate-fadeInUp`}>
               <span className={styles.badgeDot} />
-              Now live — DevPulse v2.0
+              Now live — EduHub
             </div>
             <h1 className={`${styles.heroTitle} animate-fadeInUp`} style={{ animationDelay: "0.1s" }}>
               Ideas that{" "}
@@ -54,8 +58,8 @@ export default async function HomePage() {
               forward
             </h1>
             <p className={`${styles.heroSubtitle} animate-fadeInUp`} style={{ animationDelay: "0.2s" }}>
-              Deep dives, tutorials, and perspectives on modern web development,
-              JavaScript, design systems, and developer culture.
+              In-depth guides, course reviews, and learning strategies to help you grow
+              faster — whether you&apos;re a student, professional, or lifelong learner.
             </p>
             <div className={`${styles.heroActions} animate-fadeInUp`} style={{ animationDelay: "0.3s" }}>
               <Link href="/blog" className={styles.heroCta}>
@@ -130,7 +134,6 @@ export default async function HomePage() {
                   <span>{featuredPost.readingTime} min read</span>
                 </div>
                 <h3 className={styles.featuredTitle}>{featuredPost.title}</h3>
-                <p className={styles.featuredExcerpt}>{featuredPost.excerpt}</p>
                 {featuredPost.author && (
                   <div className={styles.featuredAuthor}>
                     {featuredPost.author.avatar && (
