@@ -43,7 +43,9 @@ async function strapiRequest<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`Strapi API error: ${res.status} ${res.statusText} — ${url}`);
+    console.error(`Strapi API error: ${res.status} ${res.statusText} — ${url}`);
+    // Return empty fallback to prevent Next.js build crashes when API is unavailable or forbidden
+    return { data: [] } as unknown as T;
   }
 
   return res.json();

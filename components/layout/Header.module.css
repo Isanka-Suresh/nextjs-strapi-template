@@ -132,6 +132,20 @@
   transform: rotate(20deg);
 }
 
+.sunIcon {
+  display: none;
+}
+.moonIcon {
+  display: block;
+}
+
+:global([data-theme="dark"]) .sunIcon {
+  display: block;
+}
+:global([data-theme="dark"]) .moonIcon {
+  display: none;
+}
+
 /* ── Hamburger ── */
 .hamburger {
   display: flex;
