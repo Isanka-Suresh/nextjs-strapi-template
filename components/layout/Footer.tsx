@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import styles from "./Footer.module.css";
 
@@ -22,7 +20,7 @@ const FOOTER_LINKS = {
 };
 
 export function Footer() {
-  const year = 2026;
+  const year = new Date().getFullYear();
 
   return (
     <footer className={styles.footer}>

@@ -1,66 +1,60 @@
-// Server Component — no "use client" directive.
-// This renders Strapi Blocks rich-text content on the server,
-// eliminating the react-markdown client bundle (~50KB saved).
-//
-// Strapi Blocks format is JSON (not markdown strings).
-// The @strapi/blocks-react-renderer package handles the rendering.
+"use client";
 
-import { BlocksRenderer } from "@strapi/blocks-react-renderer";
-import type { StrapiBlocksContent } from "@/lib/types";
-import Image from "next/image";
-import { getStrapiImageUrl } from "@/lib/strapi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
+import type { Components } from "react-markdown";
 
-interface BlocksRendererProps {
-  content: StrapiBlocksContent;
+interface MarkdownRendererProps {
+  content: string;
   className?: string;
 }
 
-export function MarkdownRenderer({ content, className }: BlocksRendererProps) {
-  if (!content) return null;
+// Slugify a heading text for consistent anchor IDs
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-");
+}
 
+const components: Components = {
+  h1: ({ children }) => <h1 id={slugify(String(children))}>{children}</h1>,
+  h2: ({ children }) => <h2 id={slugify(String(children))}>{children}</h2>,
+  h3: ({ children }) => <h3 id={slugify(String(children))}>{children}</h3>,
+  h4: ({ children }) => <h4 id={slugify(String(children))}>{children}</h4>,
+  // Open external links in new tab safely
+  a: ({ href, children, ...props }) => {
+    const isExternal = href?.startsWith("http");
+    return (
+      <a
+        href={href}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
+  // Render images with responsive sizing
+  img: ({ src, alt }) => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto" }} loading="lazy" />
+  ),
+};
+
+export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   return (
     <div className={className}>
-      <BlocksRenderer
-        content={content}
-        blocks={{
-          // Override image rendering to use next/image for optimization
-          image: ({ image }) => {
-            const src = getStrapiImageUrl(image.url);
-            if (!src) return null;
-            return (
-              <figure className="blocks-image">
-                <Image
-                  src={src}
-                  alt={image.alternativeText ?? ""}
-                  width={image.width ?? 800}
-                  height={image.height ?? 450}
-                  className="blocks-image__img"
-                  sizes="(max-width: 720px) 100vw, 720px"
-                  loading="lazy"
-                />
-                {image.caption && (
-                  <figcaption className="blocks-image__caption">
-                    {image.caption}
-                  </figcaption>
-                )}
-              </figure>
-            );
-          },
-          // Open external links in new tab safely
-          link: ({ children, url }) => {
-            const isExternal = url.startsWith("http");
-            return (
-              <a
-                href={url}
-                target={isExternal ? "_blank" : undefined}
-                rel={isExternal ? "noopener noreferrer" : undefined}
-              >
-                {children}
-              </a>
-            );
-          },
-        }}
-      />
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeSlug]}
+        components={components}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }

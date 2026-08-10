@@ -1,7 +1,7 @@
 /* ── Table of Contents Sidebar ── */
 
 .toc {
-  width: 240px;
+  width: 280px;
   flex-shrink: 0;
 }
 
@@ -60,6 +60,7 @@
   transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
   line-height: 1.45;
   text-decoration: none;
+  word-break: break-word;
 }
 
 .tocLink:hover {

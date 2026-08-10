@@ -1,12 +1,4 @@
 // ─────────────────────────────────────────────
-// Strapi Blocks content type (for @strapi/blocks-react-renderer)
-// ─────────────────────────────────────────────
-
-export type StrapiBlocksContent = Parameters<
-  typeof import("@strapi/blocks-react-renderer").BlocksRenderer
->[0]["content"];
-
-// ─────────────────────────────────────────────
 // Strapi API Response wrapper types
 // ─────────────────────────────────────────────
 
@@ -68,12 +60,10 @@ export interface Post {
   documentId: string;
   title: string;
   slug: string;
-  excerpt: string | null;
-  content: StrapiBlocksContent | null;
+  content: string | null;
   coverImage: StrapiImage | null;
   readingTime: number;
   featured: boolean;
-  tags: string[] | null;
   publishedAt: string;
   updatedAt: string;
   createdAt: string;

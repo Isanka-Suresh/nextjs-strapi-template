@@ -1,79 +1,70 @@
 import type { MetadataRoute } from "next";
-import {
-  getAllPostsForSitemap,
-  getAllCategoriesForSitemap,
-  getAllAuthorsForSitemap,
-} from "@/lib/strapi";
-import { cacheLife, cacheTag } from "next/cache";
+import { getAllPostSlugs, getAllCategorySlugs, getAllAuthorSlugs } from "@/lib/strapi";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://yourdomain.com";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("posts", "categories", "authors");
+export const revalidate = 3600; // 1 hour
 
-  let posts: Array<{ slug: string; updatedAt: string }> = [];
-  let categories: Array<{ slug: string; updatedAt: string }> = [];
-  let authors: Array<{ slug: string; updatedAt: string }> = [];
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  let postSlugs: string[] = [];
+  let categorySlugs: string[] = [];
+  let authorSlugs: string[] = [];
 
   try {
-    [posts, categories, authors] = await Promise.all([
-      getAllPostsForSitemap(),
-      getAllCategoriesForSitemap(),
-      getAllAuthorsForSitemap(),
+    [postSlugs, categorySlugs, authorSlugs] = await Promise.all([
+      getAllPostSlugs(),
+      getAllCategorySlugs(),
+      getAllAuthorSlugs(),
     ]);
   } catch {
     // Strapi offline — return only static pages
   }
 
-  const now = new Date();
-
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: SITE_URL,
-      lastModified: now,
+      lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1.0,
     },
     {
       url: `${SITE_URL}/blog`,
-      lastModified: now,
+      lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
     },
     {
       url: `${SITE_URL}/about`,
-      lastModified: new Date("2024-01-01"), // Static page — rarely changes
+      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: `${SITE_URL}/contact`,
-      lastModified: new Date("2024-01-01"),
+      lastModified: new Date(),
       changeFrequency: "monthly",
       priority: 0.4,
     },
   ];
 
-  const postPages: MetadataRoute.Sitemap = posts.map((post) => ({
-    url: `${SITE_URL}/blog/${post.slug}`,
-    lastModified: post.updatedAt ? new Date(post.updatedAt) : now,
+  const postPages: MetadataRoute.Sitemap = postSlugs.map((slug) => ({
+    url: `${SITE_URL}/blog/${slug}`,
+    lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.8,
   }));
 
-  const categoryPages: MetadataRoute.Sitemap = categories.map((cat) => ({
-    url: `${SITE_URL}/category/${cat.slug}`,
-    lastModified: cat.updatedAt ? new Date(cat.updatedAt) : now,
+  const categoryPages: MetadataRoute.Sitemap = categorySlugs.map((slug) => ({
+    url: `${SITE_URL}/category/${slug}`,
+    lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.6,
   }));
 
-  const authorPages: MetadataRoute.Sitemap = authors.map((author) => ({
-    url: `${SITE_URL}/author/${author.slug}`,
-    lastModified: author.updatedAt ? new Date(author.updatedAt) : now,
-    changeFrequency: "monthly" as const,
+  const authorPages: MetadataRoute.Sitemap = authorSlugs.map((slug) => ({
+    url: `${SITE_URL}/author/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
     priority: 0.5,
   }));
 

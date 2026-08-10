@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
-import type { StrapiBlocksContent } from "@/lib/types";
 import styles from "./TableOfContents.module.css";
 
 interface TocItem {
@@ -11,43 +10,33 @@ interface TocItem {
 }
 
 interface TableOfContentsProps {
-  content: StrapiBlocksContent;
+  content: string;
 }
 
-/**
- * Extract headings from Strapi Blocks JSON content.
- * Blocks heading nodes have shape: { type: "heading", level: 2, children: [{ text: "..." }] }
- */
-function extractHeadingsFromBlocks(content: StrapiBlocksContent): TocItem[] {
-  if (!Array.isArray(content)) return [];
-
+function extractHeadings(markdown: string): TocItem[] {
+  const lines = markdown.split("\n");
   const headings: TocItem[] = [];
 
-  for (const node of content) {
-    if (node.type !== "heading") continue;
-    const level = (node as { type: "heading"; level: number; children: Array<{ text: string }> }).level;
-    if (level < 2 || level > 4) continue; // Only h2-h4 for a clean TOC
-
-    const rawText = (node as { type: "heading"; level: number; children: Array<{ text: string }> }).children
-      .map((c) => c.text ?? "")
-      .join("");
-
-    if (!rawText.trim()) continue;
-
-    const id = rawText
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .trim()
-      .replace(/\s+/g, "-");
-
-    headings.push({ id, text: rawText.trim(), level });
+  for (const line of lines) {
+    // Match ## Heading or ### Heading (h2 and h3 only for clean TOC)
+    const match = line.match(/^(#{2,4})\s+(.+)$/);
+    if (match) {
+      const level = match[1].length;
+      const text = match[2].trim().replace(/\*\*|__|\*|_|`/g, ""); // strip markdown formatting
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+      headings.push({ id, text, level });
+    }
   }
 
   return headings;
 }
 
 export function TableOfContents({ content }: TableOfContentsProps) {
-  const headings = useMemo(() => extractHeadingsFromBlocks(content), [content]);
+  const headings = useMemo(() => extractHeadings(content), [content]);
   const [activeId, setActiveId] = useState<string>("");
   const observerRef = useRef<IntersectionObserver | null>(null);
 
@@ -83,6 +72,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
     if (el) {
       el.scrollIntoView({ behavior: "smooth", block: "start" });
       setActiveId(id);
+      // Update URL hash without scroll jump
       history.pushState(null, "", `#${id}`);
     }
   };
@@ -101,7 +91,7 @@ export function TableOfContents({ content }: TableOfContentsProps) {
           </svg>
           On this page
         </p>
-        <nav aria-label="Table of contents navigation">
+        <nav>
           <ol className={styles.tocList}>
             {headings.map((heading) => (
               <li

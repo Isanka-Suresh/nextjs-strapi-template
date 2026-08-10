@@ -51,7 +51,7 @@
 }
 
 .heroTitle {
-  font-size: clamp(2rem, 8vw, 4rem);
+  font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 900;
   line-height: 1.1;
   letter-spacing: -0.03em;
@@ -120,7 +120,6 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
   backdrop-filter: blur(10px);
-  flex-wrap: wrap;
 }
 
 .stat {
@@ -286,7 +285,7 @@
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .featuredAuthor {
@@ -528,19 +527,6 @@
 @media (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 639px) {
-  .heroTitle {
-    font-size: 2.25rem;
-  }
-  .stats {
-    gap: var(--space-md);
-    padding: var(--space-md);
-  }
-  .statDivider {
-    display: none;
   }
 }
 

@@ -11,16 +11,14 @@ interface PageProps {
 export async function generateStaticParams() {
   try {
     const slugs = await getAllCategorySlugs();
-    if (slugs.length === 0) return [{ slug: "placeholder" }];
     return slugs.map((slug) => ({ slug }));
   } catch {
-    return [{ slug: "placeholder" }];
+    return [];
   }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  if (slug === "placeholder") return { title: "Placeholder" };
   try {
     const category = await getCategoryBySlug(slug);
     if (!category) return { title: "Category not found" };
@@ -33,10 +31,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+export const revalidate = 60;
+export const dynamicParams = true;
 
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params;
-  if (slug === "placeholder") notFound();
   let category, postsRes;
   try {
     [category, postsRes] = await Promise.all([

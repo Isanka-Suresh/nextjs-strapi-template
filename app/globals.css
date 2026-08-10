@@ -1,4 +1,4 @@
-/* Fonts are self-hosted via next/font/google in app/layout.tsx — no @import needed */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500&display=swap");
 
 /* ═══════════════════════════════════════════
    DESIGN TOKENS — LIGHT MODE
@@ -58,8 +58,8 @@
   --space-4xl: 6rem;
 
   /* Typography */
-  --font-sans: var(--font-inter, "Inter"), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: var(--font-fira-code, "Fira Code"), "Cascadia Code", Consolas, monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Fira Code", "Cascadia Code", Consolas, monospace;
 
   --text-xs: 0.75rem;
   --text-sm: 0.875rem;
@@ -298,18 +298,4 @@ ul, ol {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
-}
-
-/* ═══════════════════════════════════════════
-   PAGE LAYOUT (moved from inline <style> in layout.tsx)
-   ═══════════════════════════════════════════ */
-.page-wrapper {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content {
-  flex: 1;
-  padding-top: var(--header-height);
 }

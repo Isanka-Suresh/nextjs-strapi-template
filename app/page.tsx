@@ -14,13 +14,9 @@ export const metadata: Metadata = {
     "Explore curated articles on online learning, study techniques, courses, and educational resources. Written by passionate educators.",
 };
 
-import { cacheLife, cacheTag } from "next/cache";
+export const revalidate = 60;
 
 export default async function HomePage() {
-  "use cache";
-  cacheLife("minutes");
-  cacheTag("posts", "categories");
-
   let featuredPost: Post | null = null;
   let latestRes: StrapiListResponse<Post> = {
     data: [],
