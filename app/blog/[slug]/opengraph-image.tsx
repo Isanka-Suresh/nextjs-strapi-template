@@ -23,7 +23,7 @@ export default async function Image({ params }: Props) {
       title = post.seoTitle || post.title;
       categoryName = post.category?.name ?? "";
       authorName = post.author?.name ?? "";
-      excerpt = post.excerpt ?? "";
+      excerpt = post.seoDescription ?? "";
     }
   } catch {
     // Use fallback values

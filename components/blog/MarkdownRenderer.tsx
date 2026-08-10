@@ -3,6 +3,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSlug from "rehype-slug";
+import rehypeRaw from "rehype-raw";
 import type { Components } from "react-markdown";
 
 interface MarkdownRendererProps {
@@ -50,7 +51,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
     <div className={className}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSlug]}
+        rehypePlugins={[rehypeRaw, rehypeSlug]}
         components={components}
       >
         {content}
