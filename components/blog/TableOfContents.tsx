@@ -13,9 +13,28 @@ interface TableOfContentsProps {
   content: string;
 }
 
-function extractHeadings(markdown: string): TocItem[] {
-  const lines = markdown.split("\n");
+function extractHeadings(content: string): TocItem[] {
   const headings: TocItem[] = [];
+  
+  if (content.includes('</h') || content.includes('<h')) {
+    // HTML parsing
+    const htmlRegex = /<h([2-4])[^>]*>(.*?)<\/h\1>/gi;
+    let match;
+    while ((match = htmlRegex.exec(content)) !== null) {
+      const level = parseInt(match[1], 10);
+      const text = match[2].replace(/<[^>]+>/g, '').trim(); // strip inner tags
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .trim()
+        .replace(/\s+/g, "-");
+      headings.push({ id, text, level });
+    }
+    return headings;
+  }
+
+  // Markdown parsing
+  const lines = content.split("\n");
 
   for (const line of lines) {
     // Match ## Heading or ### Heading (h2 and h3 only for clean TOC)

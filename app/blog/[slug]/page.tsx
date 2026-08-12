@@ -178,16 +178,21 @@ export default async function BlogPostPage({ params }: PageProps) {
         <div className="container">
           <div className={styles.articleLayout}>
             {/* TOC Sidebar */}
-            {post.content && (
-              <TableOfContents content={post.content} />
+            {(post.htmlContent || post.content) && (
+              <TableOfContents content={(post.htmlContent || post.content) as string} />
             )}
 
             {/* Main Content */}
             <div className={styles.articleMain}>
               <div className={styles.content}>
-                {post.content && (
+                {post.htmlContent ? (
+                  <div 
+                    className={styles.prose} 
+                    dangerouslySetInnerHTML={{ __html: post.htmlContent }} 
+                  />
+                ) : post.content ? (
                   <MarkdownRenderer content={post.content} className={styles.prose} />
-                )}
+                ) : null}
               </div>
 
               {/* ── Share ── */}

@@ -71,6 +71,10 @@ export interface Post {
   author: Author | null;
   seoTitle: string | null;
   seoDescription: string | null;
+  htmlContent: string | null;
+  excerpt: string | null;
+  keywords: any;
+  date: string | null;
 }
 
 // ─────────────────────────────────────────────
