@@ -7,6 +7,8 @@ interface TocItem {
   id: string;
   text: string;
   level: number;
+  mainTitleIndex?: number;
+  subtitleIndex?: number;
 }
 
 interface TableOfContentsProps {
@@ -51,7 +53,21 @@ function extractHeadings(content: string): TocItem[] {
     }
   }
 
-  return headings;
+  // Calculate numbers
+  let mainIndex = 0;
+  let subIndex = 0;
+  let currentMainLevel = Math.min(...headings.map(h => h.level));
+
+  return headings.map((heading) => {
+    if (heading.level === currentMainLevel) {
+      mainIndex++;
+      subIndex = 0;
+      return { ...heading, mainTitleIndex: mainIndex };
+    } else {
+      subIndex++;
+      return { ...heading, mainTitleIndex: mainIndex, subtitleIndex: subIndex };
+    }
+  });
 }
 
 export function TableOfContents({ content }: TableOfContentsProps) {
@@ -122,7 +138,14 @@ export function TableOfContents({ content }: TableOfContentsProps) {
                   className={`${styles.tocLink} ${activeId === heading.id ? styles.tocLinkActive : ""}`}
                   onClick={(e) => handleClick(e, heading.id)}
                 >
-                  {heading.text}
+                  <span className={styles.tocNumber}>
+                    {heading.level === Math.min(...headings.map(h => h.level))
+                      ? `${heading.mainTitleIndex}.0`
+                      : `${heading.mainTitleIndex}.${heading.subtitleIndex}`}
+                  </span>
+                  <span className={styles.tocText}>
+                    {heading.text.length > 35 ? heading.text.substring(0, 35) + '...' : heading.text}
+                  </span>
                 </a>
               </li>
             ))}

@@ -51,16 +51,30 @@
 .level4 { padding-left: 1.75rem; }
 
 .tocLink {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
   padding: 0.3rem 0.5rem;
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
   border-radius: var(--radius-sm);
-  border-left: 2px solid transparent;
+  border-left: 3px solid transparent;
   transition: color var(--transition-fast), background var(--transition-fast), border-color var(--transition-fast);
   line-height: 1.45;
   text-decoration: none;
   word-break: break-word;
+}
+
+.tocNumber {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  min-width: 28px;
+  flex-shrink: 0;
+}
+
+.tocText {
+  flex: 1;
 }
 
 .tocLink:hover {

@@ -90,6 +90,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     `populate[1]=category`,
     `populate[2]=author`,
     `populate[3]=author.avatar`,
+    `populate[4]=faqs`,
   ].join("&");
 
   const res = await strapiRequest<StrapiListResponse<Post>>(`/posts?${query}`, {
@@ -215,3 +216,15 @@ export async function submitContact(data: ContactSubmission): Promise<void> {
     body: JSON.stringify({ data }),
   });
 }
+
+// ─────────────────────────────────────────────
+// GLOBAL SETTINGS
+// ─────────────────────────────────────────────
+
+export async function getGlobalSetting(): Promise<any> {
+  const res = await strapiRequest<StrapiSingleResponse<any>>("/global-setting", {
+    next: { revalidate: 3600, tags: ["global-setting"] },
+  });
+  return res.data ?? null;
+}
+

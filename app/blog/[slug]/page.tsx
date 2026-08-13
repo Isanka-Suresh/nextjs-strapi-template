@@ -9,10 +9,13 @@ import {
   getRelatedPosts,
   getAdjacentPosts,
   getStrapiImageUrl,
+  getGlobalSetting,
 } from "@/lib/strapi";
 import { MarkdownRenderer } from "@/components/blog/MarkdownRenderer";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { LiveRefresh } from "@/components/blog/LiveRefresh";
+import FAQAccordion from "@/components/common/FAQAccordion";
+import GlobalCTA from "@/components/common/GlobalCTA";
 import styles from "./page.module.css";
 
 interface PageProps {
@@ -74,13 +77,15 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   if (!post) notFound();
 
-  const [relatedPosts, adjacent] = await Promise.allSettled([
+  const [relatedPosts, adjacent, globalSettingResult] = await Promise.allSettled([
     post.category ? getRelatedPosts(post.category.slug, slug) : Promise.resolve([]),
     getAdjacentPosts(post.publishedAt, slug),
+    getGlobalSetting(),
   ]);
 
   const relatedPostsList = relatedPosts.status === "fulfilled" ? relatedPosts.value : [];
   const adjacentPosts = adjacent.status === "fulfilled" ? adjacent.value : { prev: null, next: null };
+  const globalSetting = globalSettingResult.status === "fulfilled" ? globalSettingResult.value : null;
 
   const imageUrl = getStrapiImageUrl(post.coverImage?.url);
   const authorAvatarUrl = getStrapiImageUrl(post.author?.avatar?.url);
@@ -136,22 +141,15 @@ export default async function BlogPostPage({ params }: PageProps) {
             <h1 className={styles.title}>{post.title}</h1>
 
             <div className={styles.meta}>
-              {post.author && (
-                <Link href={`/author/${post.author.slug}`} className={styles.authorMeta}>
-                  {authorAvatarUrl ? (
-                    <Image src={authorAvatarUrl} alt={post.author.name} width={40} height={40} className={styles.authorAvatar} />
-                  ) : (
-                    <span className={styles.authorInitial}>{post.author.name.charAt(0)}</span>
-                  )}
-                  <span className={styles.authorName}>{post.author.name}</span>
-                </Link>
-              )}
-              <div className={styles.metaDivider} />
-              <time dateTime={post.publishedAt} className={styles.date}>
-                {format(new Date(post.publishedAt), "MMMM d, yyyy")}
-              </time>
-              <div className={styles.metaDivider} />
-              <span className={styles.readTime}>{post.readingTime} min read</span>
+              <div className={styles.metaDateContainer}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles.eyeIcon}>
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <time dateTime={post.publishedAt} className={styles.date}>
+                  {format(new Date(post.publishedAt), "MMMM d, yyyy")}
+                </time>
+              </div>
             </div>
           </div>
         </div>
@@ -177,22 +175,116 @@ export default async function BlogPostPage({ params }: PageProps) {
         {/* ── Content + TOC ── */}
         <div className="container">
           <div className={styles.articleLayout}>
-            {/* TOC Sidebar */}
-            {(post.htmlContent || post.content) && (
-              <TableOfContents content={(post.htmlContent || post.content) as string} />
-            )}
+            {/* ── Sidebar (Left) ── */}
+            <aside className={styles.sidebar}>
+              <div className={styles.sidebarSticky}>
+                {/* TOC */}
+                {(post.htmlContent || post.content) && (
+                  <div className={styles.sidebarWidget}>
+                    <TableOfContents content={(post.htmlContent || post.content) as string} />
+                  </div>
+                )}
 
-            {/* Main Content */}
+                {/* Related Posts */}
+                {relatedPostsList.length > 0 && (
+                  <div className={styles.sidebarWidget}>
+                    <h3 className={styles.sidebarWidgetTitle}>Related Articles</h3>
+                    <div className={styles.sidebarRelatedList}>
+                      {relatedPostsList.map((p) => (
+                        <Link key={p.id} href={`/blog/${p.slug}`} className={styles.sidebarRelatedItem}>
+                          {p.coverImage && (
+                            <div className={styles.sidebarRelatedImgWrapper}>
+                              <Image
+                                src={getStrapiImageUrl(p.coverImage.url)}
+                                alt={p.title}
+                                fill
+                                sizes="80px"
+                                className={styles.sidebarRelatedImg}
+                              />
+                            </div>
+                          )}
+                          <div className={styles.sidebarRelatedInfo}>
+                            <h4 className={styles.sidebarRelatedTitle}>
+                              {p.title.length > 40 ? p.title.substring(0, 40) + '...' : p.title}
+                            </h4>
+                            <time className={styles.sidebarRelatedDate}>
+                              {format(new Date(p.publishedAt), "MMM d, yyyy")}
+                            </time>
+                          </div>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </aside>
+
+            {/* ── Main Content (Right) ── */}
             <div className={styles.articleMain}>
               <div className={styles.content}>
-                {post.htmlContent ? (
-                  <div 
-                    className={styles.prose} 
-                    dangerouslySetInnerHTML={{ __html: post.htmlContent }} 
-                  />
-                ) : post.content ? (
-                  <MarkdownRenderer content={post.content} className={styles.prose} />
-                ) : null}
+                {(() => {
+                  let rawContent = (post.htmlContent || post.content) as string || "";
+                  
+                  // Extract CTA URLs
+                  const whatsappMatch = rawContent.match(/\[WhatsApp Us\]\((.*?)\)/i);
+                  const bookMatch = rawContent.match(/\[Book a Free Consultation\]\((.*?)\)/i);
+                  const enquireMatch = rawContent.match(/\[Enquire About.*?\]\((.*?)\)/i);
+                  
+                  const hasEmbeddedCta = whatsappMatch || bookMatch || enquireMatch;
+                  const embeddedCtaUrls = hasEmbeddedCta ? {
+                    whatsapp: whatsappMatch?.[1],
+                    book: bookMatch?.[1],
+                    enquire: enquireMatch?.[1]
+                  } : null;
+
+                  // Clean up the polluted markdown content
+                  let cleanContent = rawContent;
+                  cleanContent = cleanContent.replace(/\[Enquire About.*?\]\(.*?\)/gi, '');
+                  cleanContent = cleanContent.replace(/\[WhatsApp Us\]\(.*?\)/gi, '');
+                  cleanContent = cleanContent.replace(/\[Book a Free Consultation\]\(.*?\)/gi, '');
+                  cleanContent = cleanContent.replace(/This guide is for general information.*?requirements at the time you apply\./gi, '');
+                  
+                  cleanContent = cleanContent.replace(/!\[.*?Education Consultant.*?\]\(.*?\)/gi, '');
+                  cleanContent = cleanContent.replace(/Jackline Wahu[\s\S]*?accurate and current\./gi, '');
+                  
+                  cleanContent = cleanContent.replace(/\[NEXT.*?\]\(.*?\)/gi, '');
+
+                  return (
+                    <>
+                      {cleanContent ? (
+                        <MarkdownRenderer content={cleanContent} className={styles.prose} />
+                      ) : null}
+
+                      {/* ── Global CTA ── */}
+                      {embeddedCtaUrls ? (
+                        <GlobalCTA 
+                          heading="Enquire About ACCA at LSBF"
+                          text="This guide is for general information. It does not guarantee admission, scholarships, or visa approval — your eligibility depends on your individual academic record and current LSBF/ACCA requirements at the time you apply."
+                          linkText="WhatsApp Us"
+                          linkUrl={embeddedCtaUrls.whatsapp}
+                          secondaryLinkText="Book a Free Consultation"
+                          secondaryLinkUrl={embeddedCtaUrls.book}
+                        />
+                      ) : globalSetting && (
+                        <GlobalCTA 
+                          heading={globalSetting.ctaHeading} 
+                          text={globalSetting.ctaText} 
+                          linkText={globalSetting.ctaLinkText} 
+                          linkUrl={globalSetting.ctaLinkUrl}
+                          secondaryLinkText={globalSetting.ctaSecondaryLinkText}
+                          secondaryLinkUrl={globalSetting.ctaSecondaryLinkUrl}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
+
+
+
+                {/* ── FAQs ── */}
+                {(post as any).faqs && (post as any).faqs.length > 0 && (
+                  <FAQAccordion faqs={(post as any).faqs} />
+                )}
               </div>
 
               {/* ── Share ── */}
@@ -228,15 +320,15 @@ export default async function BlogPostPage({ params }: PageProps) {
               {post.author && (
                 <div className={styles.authorCard}>
                   {authorAvatarUrl ? (
-                    <Image src={authorAvatarUrl} alt={post.author.name} width={64} height={64} className={styles.authorCardAvatar} />
+                    <Image src={authorAvatarUrl} alt={post.author.name} width={80} height={80} className={styles.authorCardAvatar} />
                   ) : (
                     <span className={styles.authorCardInitial}>{post.author.name.charAt(0)}</span>
                   )}
                   <div className={styles.authorCardInfo}>
-                    <p className={styles.authorCardLabel}>Written by</p>
                     <Link href={`/author/${post.author.slug}`} className={styles.authorCardName}>
                       {post.author.name}
                     </Link>
+                    <p className={styles.authorCardLabel}>Education Consultant, Studies in Malaysia</p>
                     {post.author.bio && <p className={styles.authorCardBio}>{post.author.bio}</p>}
                   </div>
                 </div>
@@ -273,39 +365,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* ── Related Posts ── */}
-        {relatedPostsList.length > 0 && (
-          <section className={styles.related}>
-            <div className="container">
-              <h2 className={styles.relatedTitle}>Related Articles</h2>
-              <div className={styles.relatedGrid}>
-                {relatedPostsList.map((p) => (
-                  <Link key={p.id} href={`/blog/${p.slug}`} className={styles.relatedCard}>
-                    {p.coverImage && (
-                      <div className={styles.relatedImage}>
-                        <Image
-                          src={getStrapiImageUrl(p.coverImage.url)}
-                          alt={p.title}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                          className={styles.relatedImg}
-                        />
-                      </div>
-                    )}
-                    <div className={styles.relatedBody}>
-                      {p.category && (
-                        <span className={styles.relatedCategory} style={{ color: p.category.color || "var(--color-primary)" }}>
-                          {p.category.name}
-                        </span>
-                      )}
-                      <h3 className={styles.relatedPostTitle}>{p.title}</h3>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+        {/* Related Posts moved to sidebar */}
       </article>
     </>
   );

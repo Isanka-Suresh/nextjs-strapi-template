@@ -51,55 +51,18 @@
 }
 
 
-.meta {
+.metaDateContainer {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.authorMeta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  transition: opacity var(--transition-fast);
+.eyeIcon {
+  color: var(--color-text-muted);
 }
 
-.authorMeta:hover { opacity: 0.8; }
-
-.authorAvatar {
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.authorInitial {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: white;
-  background: var(--gradient-primary);
-}
-
-.authorName {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.metaDivider {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--color-text-muted);
-}
-
-.date, .readTime {
-  font-size: var(--text-sm);
+.date {
+  font-size: var(--text-md);
   color: var(--color-text-muted);
 }
 
@@ -124,11 +87,92 @@
 
 /* ── Two-column article layout (TOC + content) ── */
 .articleLayout {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--space-3xl);
   padding: var(--space-2xl) 0;
   align-items: flex-start;
-  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .articleLayout {
+    grid-template-columns: 320px 1fr;
+  }
+}
+
+.sidebar {
+  width: 100%;
+}
+
+.sidebarSticky {
+  position: sticky;
+  top: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.sidebarWidget {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+}
+
+.sidebarWidgetTitle {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+  color: var(--color-text);
+}
+
+.sidebarRelatedList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.sidebarRelatedItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+.sidebarRelatedItem:hover {
+  opacity: 0.8;
+}
+
+.sidebarRelatedImgWrapper {
+  position: relative;
+  width: 80px;
+  height: 60px;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.sidebarRelatedImg {
+  object-fit: cover;
+}
+
+.sidebarRelatedInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebarRelatedTitle {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.sidebarRelatedDate {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
 }
 
 .articleMain {
@@ -278,27 +322,26 @@
 .authorCard {
   display: flex;
   gap: var(--space-xl);
-  padding: var(--space-xl);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  margin: var(--space-xl) 0;
+  padding: var(--space-2xl) 0;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  margin: var(--space-2xl) 0;
 }
 
 .authorCardAvatar {
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   object-fit: cover;
   flex-shrink: 0;
 }
 
 .authorCardInitial {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-xl);
+  font-size: var(--text-2xl);
   font-weight: 800;
   color: white;
   background: var(--gradient-primary);
@@ -312,18 +355,19 @@
 }
 
 .authorCardLabel {
-  font-size: var(--text-xs);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 4px;
 }
 
 .authorCardName {
-  font-size: var(--text-xl);
-  font-weight: 800;
+  font-size: var(--text-lg);
+  font-weight: 700;
   color: var(--color-text);
+  text-decoration: none;
   transition: color var(--transition-fast);
+  margin-bottom: 8px;
 }
 
 .authorCardName:hover { color: var(--color-primary); }
