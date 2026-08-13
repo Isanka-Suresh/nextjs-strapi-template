@@ -66,12 +66,13 @@ const components: Components = {
   },
   // Render images with responsive sizing, but hide the hardcoded author image
   img: ({ src, alt }) => {
-    if (alt?.includes("Education Consultant") || src?.includes("author")) {
+    const srcStr = typeof src === "string" ? src : "";
+    if (alt?.includes("Education Consultant") || srcStr.includes("author")) {
       return null; // Hide hardcoded author images since page.tsx renders the Author Card
     }
     return (
       // eslint-disable-next-line @next/next/no-img-element
-      <img src={src} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto", borderRadius: "12px", margin: "32px 0" }} loading="lazy" />
+      <img src={srcStr} alt={alt ?? ""} style={{ maxWidth: "100%", height: "auto", borderRadius: "12px", margin: "32px 0" }} loading="lazy" />
     );
   },
   p: ({ children }) => {
