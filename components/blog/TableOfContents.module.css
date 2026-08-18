@@ -1,19 +1,12 @@
-/* ── Table of Contents Sidebar ── */
+/* ── Table of Contents ── */
 
 .toc {
-  width: 280px;
-  flex-shrink: 0;
+  width: 100%;
 }
 
 .tocInner {
-  position: sticky;
-  top: calc(var(--header-height, 72px) + 2rem);
-  max-height: calc(100vh - var(--header-height, 72px) - 4rem);
+  max-height: 55vh;
   overflow-y: auto;
-  padding: var(--space-lg);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-xl);
   scrollbar-width: thin;
   scrollbar-color: var(--color-border) transparent;
 }
@@ -89,9 +82,4 @@
   font-weight: 600;
 }
 
-/* Mobile: hide TOC sidebar (it renders inline above content instead) */
-@media (max-width: 1024px) {
-  .toc {
-    display: none;
-  }
-}
+/* TOC visibility is managed by the parent sidebar container */

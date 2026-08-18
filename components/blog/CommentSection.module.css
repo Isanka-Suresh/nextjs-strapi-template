@@ -1,0 +1,92 @@
+/* ── Comment Section ── */
+.section {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid #E4E8EE;
+}
+
+.heading {
+  font-size: 22px;
+  color: #123353;
+  margin-bottom: 16px;
+  font-weight: 800;
+}
+
+.form {
+  display: block;
+}
+
+.label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--color-text);
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #E4E8EE;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 16px;
+  font-family: inherit;
+  color: #1A1A1A;
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.btn {
+  background: #1F4E79;
+  color: #fff;
+  border: none;
+  padding: 11px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.btn:hover:not(:disabled) {
+  background: #123353;
+}
+
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.errorText {
+  font-size: 13px;
+  color: #dc2626;
+  margin-bottom: 12px;
+}
+
+.successState {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 20px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+}
+
+.successIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.successText {
+  font-size: 15px;
+  color: #166534;
+  margin: 0;
+  line-height: 1.5;
+}

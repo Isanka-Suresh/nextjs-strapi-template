@@ -1,60 +1,57 @@
+/* ── Newsletter Form — Sidebar variant (default) ── */
 .form {
   display: flex;
-  gap: var(--space-sm);
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
-  max-width: 420px;
-  flex-wrap: wrap;
 }
 
 .input {
-  flex: 1;
-  min-width: 200px;
-  padding: 0.875rem 1.25rem;
-  font-size: var(--text-base);
-  font-family: var(--font-sans);
-  border: none;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  backdrop-filter: blur(10px);
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border, #E4E8EE);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--color-bg, #fff);
+  color: var(--color-text, #1A1A1A);
+  transition: border-color 0.15s;
   outline: none;
-  transition: background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.input::placeholder { color: rgba(255, 255, 255, 0.6); }
+.input::placeholder {
+  color: var(--color-text-muted, #94a3b8);
+}
 
 .input:focus {
-  background: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+  border-color: #1F4E79;
 }
 
 .btn {
-  padding: 0.875rem 1.5rem;
-  font-size: var(--text-base);
-  font-weight: 700;
-  font-family: var(--font-sans);
-  color: var(--color-primary);
-  background: white;
-  border-radius: var(--radius-full);
+  width: 100%;
+  background: #1F4E79;
+  color: #fff;
   border: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: 700;
   cursor: pointer;
-  white-space: nowrap;
-  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  font-size: 14px;
+  font-family: inherit;
+  transition: background 0.15s;
 }
 
-.btn:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
+.btn:hover:not(:disabled) {
+  background: #123353;
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: not-allowed;
-  transform: none;
 }
 
 .input:disabled {
-  opacity: 0.6;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
@@ -62,25 +59,28 @@
 .successState {
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
-  max-width: 420px;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
 }
 
 .successIcon {
-  font-size: 1.25rem;
+  font-size: 16px;
   flex-shrink: 0;
 }
 
 .successText {
-  font-size: var(--text-base);
-  color: white;
+  font-size: 13px;
+  color: #166534;
   font-weight: 500;
+  margin: 0;
 }
 
 /* Error state */
 .errorText {
-  width: 100%;
-  font-size: var(--text-sm);
-  color: #fca5a5;
-  margin-top: var(--space-xs);
+  font-size: 13px;
+  color: #dc2626;
+  margin-top: 4px;
 }
