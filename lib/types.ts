@@ -2,6 +2,9 @@
 // Strapi API Response wrapper types
 // ─────────────────────────────────────────────
 
+import type { BlocksContent } from '@strapi/blocks-react-renderer';
+
+
 export interface StrapiImage {
   id: number;
   url: string;
@@ -60,7 +63,6 @@ export interface Post {
   documentId: string;
   title: string;
   slug: string;
-  content: string | null;
   coverImage: StrapiImage | null;
   readingTime: number;
   featured: boolean;
@@ -71,7 +73,8 @@ export interface Post {
   author: Author | null;
   seoTitle: string | null;
   seoDescription: string | null;
-  htmlContent: string | null;
+  /** Structured Strapi Blocks JSON — rendered with BlocksRenderer */
+  htmlContent: BlocksContent | null;
   excerpt: string | null;
   keywords: any;
   date: string | null;

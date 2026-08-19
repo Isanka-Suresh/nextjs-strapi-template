@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useMemo } from "react";
+import type { BlocksContent } from '@strapi/blocks-react-renderer';
 import styles from "./TableOfContents.module.css";
 
 interface TocItem {
@@ -12,50 +13,57 @@ interface TocItem {
 }
 
 interface TableOfContentsProps {
-  content: string;
+  /** Accept either structured Strapi Blocks JSON or legacy HTML/markdown string */
+  content: BlocksContent | string;
 }
 
-function extractHeadings(content: string): TocItem[] {
+function extractHeadings(content: BlocksContent | string): TocItem[] {
   const headings: TocItem[] = [];
-  
-  if (content.includes('</h') || content.includes('<h')) {
-    // HTML parsing — extract id from element if present, else generate from text
-    const htmlRegex = /<h([2-4])([^>]*)>(.*?)<\/h\1>/gi;
-    let match;
-    while ((match = htmlRegex.exec(content)) !== null) {
-      const level = parseInt(match[1], 10);
-      const attrs = match[2];
-      const rawText = match[3].replace(/<[^>]+>/g, '').trim(); // strip inner tags
 
-      // Prefer existing id= attribute on the element
-      const existingIdMatch = attrs.match(/id=["']([^"']+)["']/i);
-      const id = existingIdMatch
-        ? existingIdMatch[1]
-        : rawText
-            .toLowerCase()
-            .replace(/[^a-z0-9\s-]/g, "")
-            .trim()
-            .replace(/\s+/g, "-");
-
-      headings.push({ id, text: rawText, level });
+  if (Array.isArray(content)) {
+    // ── Strapi Blocks JSON path ──────────────────────────────────────────
+    for (const block of content) {
+      if (block.type !== 'heading') continue;
+      const level = (block as any).level as number;
+      if (level < 2 || level > 4) continue;
+      // Concatenate all text children
+      const text = ((block as any).children ?? [])
+        .map((c: any) => c.text ?? '')
+        .join('')
+        .trim();
+      if (!text) continue;
+      const id = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+      headings.push({ id, text, level });
     }
-    // We don't return early here; we let it fall through to the numbering logic.
   } else {
-    // Markdown parsing
-    const lines = content.split("\n");
-
-    for (const line of lines) {
-      // Match ## Heading or ### Heading (h2 and h3 only for clean TOC)
-      const match = line.match(/^(#{2,4})\s+(.+)$/);
-      if (match) {
-        const level = match[1].length;
-        const text = match[2].trim().replace(/\*\*|__|\*|_|`/g, ""); // strip markdown formatting
-        const id = text
-          .toLowerCase()
-          .replace(/[^a-z0-9\s-]/g, "")
-          .trim()
-          .replace(/\s+/g, "-");
-        headings.push({ id, text, level });
+    // ── Legacy string path (HTML or markdown) ────────────────────────────
+    if (content.includes('</h') || content.includes('<h')) {
+      const htmlRegex = /<h([2-4])([^>]*)>(.*?)<\/h\1>/gi;
+      let match;
+      while ((match = htmlRegex.exec(content)) !== null) {
+        const level = parseInt(match[1], 10);
+        const attrs = match[2];
+        const rawText = match[3].replace(/<[^>]+>/g, '').trim();
+        const existingIdMatch = attrs.match(/id=["']([^"']+)["']/i);
+        const id = existingIdMatch
+          ? existingIdMatch[1]
+          : rawText.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+        headings.push({ id, text: rawText, level });
+      }
+    } else {
+      const lines = content.split('\n');
+      for (const line of lines) {
+        const match = line.match(/^(#{2,4})\s+(.+)$/);
+        if (match) {
+          const level = match[1].length;
+          const text = match[2].trim().replace(/\*\*|__|\*|_|`/g, '');
+          const id = text.toLowerCase().replace(/[^a-z0-9\s-]/g, '').trim().replace(/\s+/g, '-');
+          headings.push({ id, text, level });
+        }
       }
     }
   }

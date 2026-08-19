@@ -10,7 +10,7 @@ import {
   getAdjacentPosts,
   getStrapiImageUrl,
 } from "@/lib/strapi";
-import { HtmlRenderer } from "@/components/blog/HtmlRenderer";
+import { BlocksContentRenderer } from "@/components/blog/BlocksContentRenderer";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { LiveRefresh } from "@/components/blog/LiveRefresh";
 import { ReadingProgress } from "@/components/blog/ReadingProgress";
@@ -64,9 +64,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export const revalidate = 60;
 export const dynamicParams = true;
 
-/** Estimate reading time from raw content string */
-function calcReadTime(content: string): number {
-  const words = content.trim().split(/\s+/).length;
+/** Estimate reading time from Strapi Blocks JSON content */
+function calcReadTime(content: any): number {
+  if (!content) return 1;
+  // Extract text from all blocks
+  const text = Array.isArray(content)
+    ? content
+        .map((block: any) =>
+          (block.children ?? [])
+            .map((c: any) => c.text ?? '')
+            .join(' ')
+        )
+        .join(' ')
+    : String(content);
+  const words = text.trim().split(/\s+/).length;
   return Math.max(1, Math.round(words / 200));
 }
 
@@ -93,8 +104,8 @@ export default async function BlogPostPage({ params }: PageProps) {
   const imageUrl = getStrapiImageUrl(post.coverImage?.url);
   const authorAvatarUrl = getStrapiImageUrl(post.author?.avatar?.url);
 
-  // htmlContent is stored as raw HTML from the CMS
-  const htmlContent = post.htmlContent as string || "";
+  // htmlContent is Strapi Blocks JSON — typed as BlocksContent
+  const htmlContent = post.htmlContent;
   const readTime = post.readingTime || calcReadTime(htmlContent);
 
   const jsonLd = {
@@ -194,12 +205,9 @@ export default async function BlogPostPage({ params }: PageProps) {
             {/* ── Article Main (LEFT) ── */}
             <div className={styles.articleMain}>
               <div className={styles.content}>
-                {/* Render raw HTML from CMS — all styled blocks (key-takeaways,
-                    quick-answer, stat-cards, callout, internal-link-box, glossary-box,
-                    pullquote, data-table, faq-item, cta-button, sources-box)
-                    are styled via globals.css */}
+                {/* Render Strapi Blocks JSON via BlocksContentRenderer */}
                 {htmlContent && (
-                  <HtmlRenderer html={htmlContent} className={styles.prose} />
+                  <BlocksContentRenderer content={htmlContent} className={styles.prose} />
                 )}
               </div>
 
@@ -282,7 +290,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
             {/* ── Sidebar (RIGHT) ── */}
             <aside className={styles.sidebar}>
-              {/* TOC — generated from htmlContent headings */}
+              {/* TOC — generated from Blocks JSON headings */}
               {htmlContent && (
                 <div className={styles.sidebarWidget}>
                   <p className={styles.sidebarWidgetTitle}>Table of Contents</p>
