@@ -74,7 +74,7 @@ export interface Post {
   seoTitle: string | null;
   seoDescription: string | null;
   /** Structured Strapi Blocks JSON — rendered with BlocksRenderer */
-  htmlContent: BlocksContent | null;
+  contentBlocks: BlocksContent | null;
   excerpt: string | null;
   keywords: any;
   date: string | null;

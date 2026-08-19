@@ -104,9 +104,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const imageUrl = getStrapiImageUrl(post.coverImage?.url);
   const authorAvatarUrl = getStrapiImageUrl(post.author?.avatar?.url);
 
-  // htmlContent is Strapi Blocks JSON — typed as BlocksContent
-  const htmlContent = post.htmlContent;
-  const readTime = post.readingTime || calcReadTime(htmlContent);
+  // contentBlocks is Strapi Blocks JSON — typed as BlocksContent
+  const contentBlocks = post.contentBlocks;
+  const readTime = post.readingTime || calcReadTime(contentBlocks);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -206,8 +206,8 @@ export default async function BlogPostPage({ params }: PageProps) {
             <div className={styles.articleMain}>
               <div className={styles.content}>
                 {/* Render Strapi Blocks JSON via BlocksContentRenderer */}
-                {htmlContent && (
-                  <BlocksContentRenderer content={htmlContent} className={styles.prose} />
+                {contentBlocks && (
+                  <BlocksContentRenderer content={contentBlocks} className={styles.prose} />
                 )}
               </div>
 
@@ -291,10 +291,10 @@ export default async function BlogPostPage({ params }: PageProps) {
             {/* ── Sidebar (RIGHT) ── */}
             <aside className={styles.sidebar}>
               {/* TOC — generated from Blocks JSON headings */}
-              {htmlContent && (
+              {contentBlocks && (
                 <div className={styles.sidebarWidget}>
                   <p className={styles.sidebarWidgetTitle}>Table of Contents</p>
-                  <TableOfContents content={htmlContent} />
+                  <TableOfContents content={contentBlocks} />
                 </div>
               )}
 
