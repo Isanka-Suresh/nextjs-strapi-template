@@ -10,7 +10,7 @@ import {
   getAdjacentPosts,
   getStrapiImageUrl,
 } from "@/lib/strapi";
-import { BlocksContentRenderer } from "@/components/blog/BlocksContentRenderer";
+import { HtmlRenderer } from "@/components/blog/HtmlRenderer";
 import { TableOfContents } from "@/components/blog/TableOfContents";
 import { LiveRefresh } from "@/components/blog/LiveRefresh";
 import { ReadingProgress } from "@/components/blog/ReadingProgress";
@@ -104,9 +104,9 @@ export default async function BlogPostPage({ params }: PageProps) {
   const imageUrl = getStrapiImageUrl(post.coverImage?.url);
   const authorAvatarUrl = getStrapiImageUrl(post.author?.avatar?.url);
 
-  // contentBlocks is Strapi Blocks JSON — typed as BlocksContent
-  const contentBlocks = post.contentBlocks;
-  const readTime = post.readingTime || calcReadTime(contentBlocks);
+  // htmlContent is the raw HTML string
+  const htmlContent = post.htmlContent;
+  const readTime = post.readingTime || calcReadTime(htmlContent);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -205,9 +205,9 @@ export default async function BlogPostPage({ params }: PageProps) {
             {/* ── Article Main (LEFT) ── */}
             <div className={styles.articleMain}>
               <div className={styles.content}>
-                {/* Render Strapi Blocks JSON via BlocksContentRenderer */}
-                {contentBlocks && (
-                  <BlocksContentRenderer content={contentBlocks} className={styles.prose} />
+                {/* Render raw HTML via HtmlRenderer */}
+                {htmlContent && (
+                  <HtmlRenderer content={htmlContent} className={styles.prose} />
                 )}
               </div>
 
@@ -290,11 +290,11 @@ export default async function BlogPostPage({ params }: PageProps) {
 
             {/* ── Sidebar (RIGHT) ── */}
             <aside className={styles.sidebar}>
-              {/* TOC — generated from Blocks JSON headings */}
-              {contentBlocks && (
+              {/* TOC — generated from HTML headings */}
+              {htmlContent && (
                 <div className={styles.sidebarWidget}>
                   <p className={styles.sidebarWidgetTitle}>Table of Contents</p>
-                  <TableOfContents content={contentBlocks} />
+                  <TableOfContents content={htmlContent} />
                 </div>
               )}
 

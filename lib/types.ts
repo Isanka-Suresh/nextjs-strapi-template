@@ -73,8 +73,8 @@ export interface Post {
   author: Author | null;
   seoTitle: string | null;
   seoDescription: string | null;
-  /** Structured Strapi Blocks JSON — rendered with BlocksRenderer */
-  contentBlocks: BlocksContent | null;
+  /** Raw HTML from CKEditor */
+  htmlContent: string | null;
   excerpt: string | null;
   keywords: any;
   date: string | null;

@@ -927,3 +927,59 @@ table.data-table tr:hover td {
   border-top: 1px solid #E4E8EE;
   margin: 30px 0;
 }
+
+/* ═══════════════════════════════════════════
+   CUSTOM HTML BLOG STYLES (RESTORED)
+   ═══════════════════════════════════════════ */
+:root {
+  --brand: #1F4E79; --brand-dark: #123353; --brand-light: #EAF2FA;
+  --ink: #1A1A1A; --grey: #5B6472; --grey-light: #F5F7FA; --border: #E4E8EE;
+  --accent: #F5A623;
+}
+
+.prose .quick-answer { background: var(--brand-light); border-left: 4px solid var(--brand); border-radius: 10px; padding: 18px 20px; margin: 8px 0 28px; font-size: 16.5px; }
+.prose .quick-answer strong.label { color: var(--brand); text-transform: uppercase; font-size: 12px; letter-spacing: .05em; display: block; margin-bottom: 6px; }
+
+.prose .callout { background: #FFF7EA; border: 1px solid #F4DFB6; border-radius: 10px; padding: 16px 18px; margin: 0 0 20px; font-size: 15px; color: #5a4620; }
+.prose .callout strong { color: #8a6415; }
+
+.prose .pullquote { border-left: 4px solid var(--accent); margin: 30px 0; padding: 6px 0 6px 20px; font-size: 20px; font-style: italic; color: var(--brand-dark); }
+
+.prose table.data-table { width: 100%; border-collapse: collapse; margin: 10px 0 26px; font-size: 14.5px; }
+.prose table.data-table caption { caption-side: top; text-align: left; font-weight: 700; color: var(--grey); font-size: 13px; margin-bottom: 8px; }
+.prose table.data-table th { background: var(--brand); color: #fff; text-align: left; padding: 10px 14px; font-size: 13px; }
+.prose table.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.prose table.data-table tr:nth-child(even) td { background: var(--grey-light); }
+
+.prose .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 10px 0 30px; }
+@media(max-width:700px) { .prose .stat-cards { grid-template-columns: 1fr; } }
+.prose .stat-card { background: var(--grey-light); border: 1px solid var(--border); border-radius: 12px; padding: 18px; text-align: center; }
+.prose .stat-card .num { font-size: 30px; font-weight: 800; color: var(--brand); }
+.prose .stat-card .label { font-size: 13px; color: var(--grey); margin-top: 4px; }
+
+.prose .internal-link-box { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--brand); border-radius: 10px; padding: 16px 18px; margin: 26px 0; }
+.prose .internal-link-box .kicker { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); font-weight: 700; margin-bottom: 6px; }
+.prose .internal-link-box a { font-weight: 700; }
+
+.prose .faq-item { border-bottom: 1px solid var(--border); padding: 16px 0; }
+.prose .faq-item h3 { margin: 0 0 8px; font-size: 17px; }
+.prose .faq-item p { margin: 0; font-size: 15.5px; }
+
+.prose .cta-button { display: inline-block; background: var(--accent); color: #1a1a1a; font-weight: 800; padding: 14px 28px; border-radius: 8px; margin: 18px 0 6px; }
+.prose .cta-button:hover { background: #e0961a; text-decoration: none; }
+
+.prose .key-takeaways { background: #fff; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 10px; padding: 16px 20px; margin: 8px 0 18px; }
+.prose .key-takeaways strong.label { color: var(--brand-dark); text-transform: uppercase; font-size: 12px; letter-spacing: .05em; display: block; margin-bottom: 8px; }
+.prose .key-takeaways ul { margin: 0; padding-left: 20px; }
+.prose .key-takeaways li { margin-bottom: 6px; font-size: 15.5px; color: #2c2f36; }
+
+.prose .glossary-box { background: #F4F8FC; border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin: 6px 0 24px; }
+.prose .glossary-box h4 { margin: 0 0 4px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); }
+.prose .glossary-box dl { margin: 0; }
+.prose .glossary-box dt { font-weight: 700; font-size: 14px; color: var(--brand); margin-top: 10px; }
+.prose .glossary-box dd { margin: 2px 0 0; font-size: 14px; color: #3a3f47; }
+
+.prose .sources-box { background: var(--grey-light); border: 1px solid var(--border); border-radius: 10px; padding: 16px 20px; margin: 30px 0 10px; }
+.prose .sources-box h4 { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--grey); }
+.prose .sources-box ol { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--grey); }
+.prose .sources-box li { margin-bottom: 6px; }

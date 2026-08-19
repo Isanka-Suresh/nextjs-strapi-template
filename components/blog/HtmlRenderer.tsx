@@ -1,7 +1,8 @@
 "use client";
 
 interface HtmlRendererProps {
-  html: string;
+  html?: string;
+  content?: string;
   className?: string;
 }
 
@@ -10,11 +11,12 @@ interface HtmlRendererProps {
  * The HTML is pre-sanitized at import time (Cheerio strips scripts/styles).
  * We use dangerouslySetInnerHTML because the content is trusted CMS-controlled HTML.
  */
-export function HtmlRenderer({ html, className }: HtmlRendererProps) {
+export function HtmlRenderer({ html, content, className }: HtmlRendererProps) {
+  const rawHtml = html ?? content ?? "";
   return (
     <div
       className={className}
-      dangerouslySetInnerHTML={{ __html: html }}
+      dangerouslySetInnerHTML={{ __html: rawHtml }}
     />
   );
 }
